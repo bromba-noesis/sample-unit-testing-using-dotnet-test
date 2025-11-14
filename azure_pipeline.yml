@@ -1,0 +1,12 @@
+trigger:
+- main
+
+pool:
+  vmImage: windows-latest
+
+steps:
+- script: |
+    dotnet restore
+    dotnet build
+    dotnet test
+  displayName: 'task1'
