@@ -7,5 +7,6 @@ pool:
 
 steps:
 - script: |
-    echo - Publishing Release Notes - 
+    echo - Publishing Release Notes -
+    echo
   displayName: 'task1'
