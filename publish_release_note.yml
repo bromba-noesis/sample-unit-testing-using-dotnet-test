@@ -1,0 +1,11 @@
+trigger: none
+
+pr: none
+
+pool:
+  vmImage: windows-latest
+
+steps:
+- script: |
+    echo - Publishing Release Notes - 
+  displayName: 'task1'
