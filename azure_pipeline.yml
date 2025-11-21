@@ -6,13 +6,13 @@ pool:
 
 steps:
 - script: |
-    echo "- Restoring -"
+    echo - Restoring -
     dotnet restore
-    echo ""
-    echo "- Building -"
+    echo 
+    echo - Building -
     dotnet build
-    echo ""
-    echo "- Testing -"
+    echo 
+    echo - Testing -
     dotnet test
-    echo ""
+    echo 
   displayName: 'task1'
