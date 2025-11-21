@@ -5,8 +5,49 @@ pr: none
 pool:
   vmImage: windows-latest
 
+variables:
+  JIRA_EMAIL: $(JIRA_EMAIL)
+  JIRA_API_TOKEN: $(JIRA_API_TOKEN)
+  CONFLUENCE_EMAIL: $(CONFLUENCE_EMAIL)
+  CONFLUENCE_API_TOKEN: $(CONFLUENCE_API_TOKEN)
+
+  JIRA_BASE_URL: "https://noesis-devops.atlassian.net"
+  CONFLUENCE_BASE_URL: "https://noesis-devops.atlassian.net/wiki"
+
+  JIRA_VERSION_ID: "1.2.1" #hardcoded!
+  CONFLUENCE_SPACE_KEY: "ENG"
+  RELEASE_TITLE: "Release Notes – Version 1.2.1" #hardcoded!
+
 steps:
-- script: |
-    echo - Publishing Release Notes -
-    echo
-  displayName: 'publish'
+  - task: PowerShell@2
+    displayName: "Generate & Publish Release Notes"
+    inputs:
+      targetType: 'inline'
+      script: |
+        # ==================================================
+        # Load pipeline variables
+        # ==================================================
+        $jiraEmail   = "$(JIRA_EMAIL)"
+        $jiraToken   = "$(JIRA_API_TOKEN)"
+        $confEmail   = "$(CONFLUENCE_EMAIL)"
+        $confToken   = "$(CONFLUENCE_API_TOKEN)"
+
+        $jiraBase    = "$(JIRA_BASE_URL)"
+        $confBase    = "$(CONFLUENCE_BASE_URL)"
+
+        $versionId   = "$(JIRA_VERSION_ID)"
+        $spaceKey    = "$(CONFLUENCE_SPACE_KEY)"
+        $pageTitle   = "$(RELEASE_TITLE)"
+
+        # ==================================================
+        # Build Basic Auth Headers
+        # ==================================================
+        $jiraAuth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$jiraEmail:$jiraToken"))
+        $confAuth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$confEmail:$confToken"))
+
+        # ==================================================
+        # 1. GET release notes from Jira
+        # ==================================================
+        $jiraNotesUrl = "$jiraBase/rest/api/3/version/$versionId/notes?style=html"
+
+        Write-Host "Fetching Release Notes from Jira Version ID = $versionId"
