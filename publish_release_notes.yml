@@ -48,6 +48,6 @@ steps:
         # ==================================================
         # 1. GET release notes from Jira
         # ==================================================
-        $jiraNotesUrl = "$jiraBase/rest/api/3/version/$versionId/notes?style=html"
+        $jiraNotesUrl = "${jiraBase}/rest/api/3/version/${versionId}/notes?style=html"
 
         Write-Host "Fetching Release Notes from Jira Version ID = ${versionId}"
