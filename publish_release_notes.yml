@@ -42,8 +42,8 @@ steps:
         # ==================================================
         # Build Basic Auth Headers
         # ==================================================
-        $jiraAuth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$jiraEmail:$jiraToken"))
-        $confAuth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$confEmail:$confToken"))
+        $jiraAuth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${jiraEmail}:${jiraToken}"))
+        $confAuth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${confEmail}:${confToken}"))
 
         # ==================================================
         # 1. GET release notes from Jira
