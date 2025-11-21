@@ -29,7 +29,7 @@ steps:
         # ==================================================
         echo 1
         
-        $jiraEmail   = "$(JIRA_EMAIL)"
+        $jiraEmail   = "${JIRA_EMAIL}"
         $jiraToken   = "$(JIRA_API_TOKEN)"
         $confEmail   = "$(CONFLUENCE_EMAIL)"
         $confToken   = "$(CONFLUENCE_API_TOKEN)"
