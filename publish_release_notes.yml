@@ -30,16 +30,16 @@ steps:
         echo 1
         
         $jiraEmail   = "${JIRA_EMAIL}"
-        $jiraToken   = "$(JIRA_API_TOKEN)"
-        $confEmail   = "$(CONFLUENCE_EMAIL)"
-        $confToken   = "$(CONFLUENCE_API_TOKEN)"
+        $jiraToken   = "${(JIRA_API_TOKEN}"
+        $confEmail   = "${CONFLUENCE_EMAIL}"
+        $confToken   = "${CONFLUENCE_API_TOKEN}"
 
-        $jiraBase    = "$(JIRA_BASE_URL)"
-        $confBase    = "$(CONFLUENCE_BASE_URL)"
+        $jiraBase    = "${JIRA_BASE_URL}"
+        $confBase    = "${CONFLUENCE_BASE_URL}"
 
-        $versionId   = "$(JIRA_VERSION_ID)"
-        $spaceKey    = "$(CONFLUENCE_SPACE_KEY)"
-        $pageTitle   = "$(RELEASE_TITLE)"
+        $versionId   = "${JIRA_VERSION_ID}"
+        $spaceKey    = "${CONFLUENCE_SPACE_KEY}"
+        $pageTitle   = "${RELEASE_TITLE}"
 
         echo 2
 
