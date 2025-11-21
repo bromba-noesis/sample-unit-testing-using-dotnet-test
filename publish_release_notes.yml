@@ -27,6 +27,8 @@ steps:
         # ==================================================
         # Load pipeline variables
         # ==================================================
+        echo 1
+        
         $jiraEmail   = "$(JIRA_EMAIL)"
         $jiraToken   = "$(JIRA_API_TOKEN)"
         $confEmail   = "$(CONFLUENCE_EMAIL)"
@@ -39,11 +41,15 @@ steps:
         $spaceKey    = "$(CONFLUENCE_SPACE_KEY)"
         $pageTitle   = "$(RELEASE_TITLE)"
 
+        echo 2
+
         # ==================================================
         # Build Basic Auth Headers
         # ==================================================
         $jiraAuth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${jiraEmail}:${jiraToken}"))
         $confAuth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${confEmail}:${confToken}"))
+
+        echo 3
 
         # ==================================================
         # 1. GET release notes from Jira
