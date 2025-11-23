@@ -17,68 +17,68 @@ steps:
       FIX_VERSION="1.2.1"
       RELEASE_TITLE="Release Notes – Version 1.2.1"
 
-      echo "Generating release notes for Jira project $PROJECT_KEY, fixVersion $FIX_VERSION..."
+      # -------------------------
+      # Validate required variables
+      # -------------------------
+      : "${JIRA_BASE_URL:?JIRA_BASE_URL is required}"
+      : "${CONFLUENCE_BASE_URL:?CONFLUENCE_BASE_URL is required}"
+      : "${JIRA_EMAIL:?JIRA_EMAIL is required}"
+      : "${JIRA_API_TOKEN:?JIRA_API_TOKEN is required}"
+      : "${CONFLUENCE_EMAIL:?CONFLUENCE_EMAIL is required}"
+      : "${CONFLUENCE_API_TOKEN:?CONFLUENCE_API_TOKEN is required}"
 
+      # -------------------------
+      # Encode credentials
+      # -------------------------
       JIRA_AUTH=$(echo -n "$JIRA_EMAIL:$JIRA_API_TOKEN" | base64)
       CONF_AUTH=$(echo -n "$CONFLUENCE_EMAIL:$CONFLUENCE_API_TOKEN" | base64)
 
-      # Prepare JQL + pagination
+      # -------------------------
+      # Build JQL
+      # -------------------------
       JQL="project = $PROJECT_KEY AND fixVersion = \"$FIX_VERSION\" ORDER BY issuetype, priority"
+
+      # -------------------------
+      # Pagination variables
+      # -------------------------
       NEXT_TOKEN=null
-      ISSUES_JSON="[]"
+      ALL_ISSUES_JSON="[]"
 
-      echo 0
-
-      if [ -z "$JIRA_BASE_URL" ] || [ -z "$JQL" ]; then
-        echo "Error: JIRA_BASE_URL or JQL is empty"
-        exit 1
-      fi
-      
-      body=$(jq -n --arg jql "$JQL" '{
-        jql: $jql,
-        maxResults: 100,
-        fields: ["key", "summary", "issuetype"]
-      }')
-      
-      if [ -z "$body" ]; then
-        echo "Error: JSON payload is empty"
-        exit 1
-      fi
-
-      echo 1
+      echo "Fetching Jira issues for $PROJECT_KEY fixVersion $FIX_VERSION..."
 
       while : ; do
-        # Build body for POST
-        echo 2
-        body=$(jq -n --arg jql "$JQL" --argjson token "$NEXT_TOKEN" '{
+        # Build payload for POST
+        PAYLOAD=$(jq -n --arg jql "$JQL" --argjson token "$NEXT_TOKEN" '{
           jql: $jql,
           maxResults: 100,
           nextPageToken: $token,
           fields: ["key", "summary", "issuetype"]
         }')
 
-        echo 3
-        echo "Calling Jira API, nextPageToken = $NEXT_TOKEN"
+        if [ -z "$PAYLOAD" ]; then
+          echo "Error: payload for curl is empty"
+          exit 1
+        fi
 
-        resp=$(curl -s \
+        # Call Jira API
+        RESP=$(curl -s \
           -H "Authorization: Basic $JIRA_AUTH" \
           -H "Content-Type: application/json" \
-          -d "$body" \
+          -d "$PAYLOAD" \
           "$JIRA_BASE_URL/rest/api/3/search/jql")
 
-        # Parse response
-        echo 4
-        issuesPage=$(echo "$resp" | jq '.issues')
-        ISSUES_JSON=$(echo "$ISSUES_JSON" | jq ". + $issuesPage")
+        if [ -z "$RESP" ]; then
+          echo "Error: empty response from Jira API"
+          exit 1
+        fi
 
-        # Get new nextPageToken
-        NEXT_TOKEN=$(echo "$resp" | jq -r '.nextPageToken // "null"')
+        ISSUES_PAGE=$(echo "$RESP" | jq '.issues')
+        ALL_ISSUES_JSON=$(echo "$ALL_ISSUES_JSON" | jq ". + $ISSUES_PAGE")
 
-        echo 5
-        # Check if this was the last page
-        isLast=$(echo "$resp" | jq -r '.isLast // true')
-        if [ "$isLast" = "true" ] || [ "$NEXT_TOKEN" = "null" ]; then
+        NEXT_TOKEN=$(echo "$RESP" | jq -r '.nextPageToken // "null"')
+        IS_LAST=$(echo "$RESP" | jq -r '.isLast // true')
+
+        if [ "$IS_LAST" = "true" ] || [ "$NEXT_TOKEN" = "null" ]; then
           break
         fi
       done
-      
