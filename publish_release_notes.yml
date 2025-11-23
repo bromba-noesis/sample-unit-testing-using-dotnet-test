@@ -27,6 +27,24 @@ steps:
       NEXT_TOKEN=null
       ISSUES_JSON="[]"
 
+      echo 0
+
+      if [ -z "$JIRA_BASE_URL" ] || [ -z "$JQL" ]; then
+        echo "Error: JIRA_BASE_URL or JQL is empty"
+        exit 1
+      fi
+      
+      body=$(jq -n --arg jql "$JQL" '{
+        jql: $jql,
+        maxResults: 100,
+        fields: ["key", "summary", "issuetype"]
+      }')
+      
+      if [ -z "$body" ]; then
+        echo "Error: JSON payload is empty"
+        exit 1
+      fi
+
       echo 1
 
       while : ; do
@@ -42,20 +60,11 @@ steps:
         echo 3
         echo "Calling Jira API, nextPageToken = $NEXT_TOKEN"
 
-        set +e
         resp=$(curl -s \
           -H "Authorization: Basic $JIRA_AUTH" \
           -H "Content-Type: application/json" \
           -d "$body" \
           "$JIRA_BASE_URL/rest/api/3/search/jql")
-        
-        curl_exit=$?
-        set -e
-        
-        if [ $curl_exit -ne 0 ]; then
-          echo "curl failed with exit code $curl_exit"
-          exit $curl_exit
-        fi
 
         # Parse response
         echo 4
