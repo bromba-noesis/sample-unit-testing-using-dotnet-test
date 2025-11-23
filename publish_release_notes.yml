@@ -27,3 +27,5 @@ steps:
 
       JQL="project=$PROJECT_KEY AND fixVersion=\"$FIX_VERSION\" ORDER BY issuetype, priority"
       SEARCH_URL="$JIRA_BASE_URL/rest/api/3/search?jql=$(echo $JQL | jq -sRr @uri)&maxResults=1000&fields=key,summary,issuetype"
+
+      curl -s -H "Authorization: Basic $JIRA_AUTH" -H "Accept: application/json" "$SEARCH_URL"
