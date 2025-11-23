@@ -41,11 +41,21 @@ steps:
 
         echo 3
         echo "Calling Jira API, nextPageToken = $NEXT_TOKEN"
+
+        set +e
         resp=$(curl -s \
           -H "Authorization: Basic $JIRA_AUTH" \
           -H "Content-Type: application/json" \
           -d "$body" \
           "$JIRA_BASE_URL/rest/api/3/search/jql")
+        
+        curl_exit=$?
+        set -e
+        
+        if [ $curl_exit -ne 0 ]; then
+          echo "curl failed with exit code $curl_exit"
+          exit $curl_exit
+        fi
 
         # Parse response
         echo 4
