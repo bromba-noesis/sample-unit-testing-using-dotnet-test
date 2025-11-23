@@ -18,7 +18,7 @@ steps:
         # Load pipeline variables
         # ==================================================        
         $jiraEmail   = "$(JIRA_EMAIL)"
-        $jiraToken   = "$((JIRA_API_TOKEN)"
+        $jiraToken   = "$(JIRA_API_TOKEN)"
         $confEmail   = "$(CONFLUENCE_EMAIL)"
         $confToken   = "$(CONFLUENCE_API_TOKEN)"
 
