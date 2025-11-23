@@ -27,8 +27,11 @@ steps:
       NEXT_TOKEN=null
       ISSUES_JSON="[]"
 
+      echo 1
+
       while : ; do
         # Build body for POST
+        echo 2
         body=$(jq -n --arg jql "$JQL" --argjson token "$NEXT_TOKEN" '{
           jql: $jql,
           maxResults: 100,
@@ -36,6 +39,7 @@ steps:
           fields: ["key", "summary", "issuetype"]
         }')
 
+        echo 3
         echo "Calling Jira API, nextPageToken = $NEXT_TOKEN"
         resp=$(curl -s \
           -H "Authorization: Basic $JIRA_AUTH" \
@@ -44,12 +48,14 @@ steps:
           "$JIRA_BASE_URL/rest/api/3/search/jql")
 
         # Parse response
+        echo 4
         issuesPage=$(echo "$resp" | jq '.issues')
         ISSUES_JSON=$(echo "$ISSUES_JSON" | jq ". + $issuesPage")
 
         # Get new nextPageToken
         NEXT_TOKEN=$(echo "$resp" | jq -r '.nextPageToken // "null"')
 
+        echo 5
         # Check if this was the last page
         isLast=$(echo "$resp" | jq -r '.isLast // true')
         if [ "$isLast" = "true" ] || [ "$NEXT_TOKEN" = "null" ]; then
