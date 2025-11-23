@@ -28,11 +28,6 @@ steps:
       # Get release notes from Jira
       # ---------------------------
       JIRA_URL="$JIRA_BASE_URL/rest/api/3/version/$JIRA_VERSION_ID/notes?style=html"
-      echo "Fetching Jira release notes for version $JIRA_VERSION_ID..."
 
-      NOTES_JSON=$(curl -s -H "Authorization: Basic $JIRA_AUTH" -H "Accept: application/json" "$JIRA_URL")
+      curl -s -H "Authorization: Basic $JIRA_AUTH" -H "Accept: application/json" "$JIRA_URL"
       
-      if [ -z "$NOTES_JSON" ]; then
-        echo "Failed to fetch release notes from Jira."
-        exit 1
-      fi
