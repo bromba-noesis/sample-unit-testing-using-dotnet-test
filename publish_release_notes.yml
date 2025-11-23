@@ -29,18 +29,30 @@ steps:
         $spaceKey    = "$(CONFLUENCE_SPACE_KEY)"
         $pageTitle   = "Release Notes – Version 1.2.1" #hardcoded
 
-        # ==================================================
-        # Build Basic Auth Headers
-        # ==================================================
-        $jiraAuth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${jiraEmail}:${jiraToken}"))
-        $confAuth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${confEmail}:${confToken}"))
+        # ============================================
+        # Build HttpClient instances
+        # ============================================
+        $jiraClient = New-Object System.Net.Http.HttpClient
+        $confClient = New-Object System.Net.Http.HttpClient
 
-        # ==================================================
+        # Headers
+        $jiraAuthValue = "Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${jiraEmail}`:${jiraToken}"))
+        $confAuthValue = "Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${confEmail}`:${confToken}"))
+
+        $jiraClient.DefaultRequestHeaders.Authorization = $jiraAuthValue
+        $confClient.DefaultRequestHeaders.Authorization = $confAuthValue
+
+        # ============================================
         # 1. GET release notes from Jira
-        # ==================================================
-        $jiraUrl = "$jiraBase/rest/api/3/version/$versionId/notes?style=html"
+        # ============================================
+        $notesUrl = "$jiraBase/rest/api/3/version/$versionId/notes?style=html"
+        Write-Host "Fetching release notes from $notesUrl"
 
-        Write-Host "Getting $versionId Release Notes from Jira at $jiraBase"
-        Write-Host "Storing Release Notes at $confBase"
+        $jiraTask = $jiraClient.GetAsync($notesUrl)
+        $jiraTask.Wait()
+        $jiraResponse = $jiraTask.Result
 
-        curl.exe -s -u "$jiraAuth" -H "Accept: application/json" "$jiraUrl"
+        if (-not $jiraResponse.IsSuccessStatusCode) {
+            Write-Error "Jira API returned $($jiraResponse.StatusCode)"
+            exit 1
+        }
