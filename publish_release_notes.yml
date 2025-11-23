@@ -7,12 +7,14 @@ pool:
 
 variables:
 - group: Atlassian
-  JIRA_VERSION_ID: "1.2.1" #hardcoded
-  RELEASE_TITLE: "Release Notes – Version 1.2.1" #hardcoded
 
 steps:
 - script: |
       set -euo pipefail
+
+      #hardcoded!
+      JIRA_VERSION_ID = "1.2.1"
+      RELEASE_TITLE = "Release Notes – Version 1.2.1" 
 
       echo "Generating and publishing release notes..."
 
