@@ -13,8 +13,8 @@ steps:
       set -euo pipefail
 
       #hardcoded!
-      PROJECT_KEY: "BN"
-      FIX_VERSION: "1.2.1"
+      PROJECT_KEY="BN"
+      FIX_VERSION="1.2.1"
       RELEASE_TITLE="Release Notes – Version 1.2.1"
 
       echo "Generating release notes for Jira project $PROJECT_KEY, fixVersion $FIX_VERSION..."
