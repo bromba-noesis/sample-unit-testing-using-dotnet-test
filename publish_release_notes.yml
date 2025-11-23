@@ -29,5 +29,6 @@ steps:
       # ---------------------------
       JIRA_URL="$JIRA_BASE_URL/rest/api/3/version/$JIRA_VERSION_ID/notes?style=html"
 
-      curl -s -H "Authorization: Basic $JIRA_AUTH" -H "Accept: application/json" "$JIRA_URL"
+      #curl -s -H "Authorization: Basic $JIRA_AUTH" -H "Accept: application/json" "$JIRA_URL"
+      curl -s -H "Accept: application/json" "$JIRA_URL"
       
