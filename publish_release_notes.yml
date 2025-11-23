@@ -34,7 +34,7 @@ steps:
       CONF_AUTH=$(echo -n "$CONFLUENCE_EMAIL:$CONFLUENCE_API_TOKEN" | base64)
 
       # -------------------------
-      # Build JQL
+      # Build JQL query
       # -------------------------
       JQL="project = $PROJECT_KEY AND fixVersion = \"$FIX_VERSION\" ORDER BY issuetype, priority"
 
@@ -47,31 +47,29 @@ steps:
       echo "Fetching Jira issues for $PROJECT_KEY fixVersion $FIX_VERSION..."
 
       while : ; do
-        # Build payload for POST
-        PAYLOAD=$(jq -n --arg jql "$JQL" --argjson token "$NEXT_TOKEN" '{
+        # Build payload JSON and save to temp file
+        JIRA_PAYLOAD_FILE=$(mktemp)
+        jq -n --arg jql "$JQL" --argjson token "$NEXT_TOKEN" '{
           jql: $jql,
           maxResults: 100,
           nextPageToken: $token,
           fields: ["key", "summary", "issuetype"]
-        }')
+        }' > "$JIRA_PAYLOAD_FILE"
 
-        if [ -z "$PAYLOAD" ]; then
-          echo "Error: payload for curl is empty"
+        # Check file exists and is not empty
+        if [ ! -s "$JIRA_PAYLOAD_FILE" ]; then
+          echo "Error: Jira payload file is empty"
           exit 1
         fi
 
-        echo aaa
-
-        # Call Jira API
-        RESP=$(curl -s \
+        # Call Jira API safely
+        RESP=$(curl -s -X POST \
           -H "Authorization: Basic $JIRA_AUTH" \
           -H "Content-Type: application/json" \
-          -d "$PAYLOAD" \
+          --data-binary @"$JIRA_PAYLOAD_FILE" \
           "$JIRA_BASE_URL/rest/api/3/search/jql")
 
-        echo $?
-        
-        echo bbb
+        rm -f "$JIRA_PAYLOAD_FILE"
 
         if [ -z "$RESP" ]; then
           echo "Error: empty response from Jira API"
@@ -88,3 +86,6 @@ steps:
           break
         fi
       done
+
+      ISSUE_COUNT=$(echo "$ALL_ISSUES_JSON" | jq 'length')
+      echo "Fetched $ISSUE_COUNT issues."
