@@ -3,56 +3,27 @@ trigger: none
 pr: none
 
 pool:
-  vmImage: windows-latest
+  vmImage: 'ubuntu-latest'
 
 variables:
-- group: Atlassian  
+- group: Atlassian
+  JIRA_VERSION_ID: "1.2.1" #hardcoded
+  RELEASE_TITLE: "Release Notes – Version 1.2.1" #hardcoded
 
 steps:
-  - task: PowerShell@2
-    displayName: "Generate & Publish Release Notes"
-    inputs:
-      targetType: 'inline'
-      script: |
-        # ==================================================
-        # Load pipeline variables
-        # ==================================================        
-        $jiraEmail   = "$(JIRA_EMAIL)"
-        $jiraToken   = "$(JIRA_API_TOKEN)"
-        $confEmail   = "$(CONFLUENCE_EMAIL)"
-        $confToken   = "$(CONFLUENCE_API_TOKEN)"
+- script: |
+      set -euo pipefail
 
-        $jiraBase    = "$(JIRA_BASE_URL)"
-        $confBase    = "$(CONFLUENCE_BASE_URL)"
+      echo "Generating and publishing release notes..."
 
-        $versionId   = "1.2.1" #hardcoded
-        $spaceKey    = "$(CONFLUENCE_SPACE_KEY)"
-        $pageTitle   = "Release Notes – Version 1.2.1" #hardcoded
-
-        # ============================================
-        # Build HttpClient instances
-        # ============================================
-        $jiraClient = New-Object System.Net.Http.HttpClient
-        $confClient = New-Object System.Net.Http.HttpClient
-
-        # Headers
-        $jiraAuthValue = "Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${jiraEmail}`:${jiraToken}"))
-        $confAuthValue = "Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${confEmail}`:${confToken}"))
-
-        $jiraClient.DefaultRequestHeaders.Authorization = $jiraAuthValue
-        $confClient.DefaultRequestHeaders.Authorization = $confAuthValue
-
-        # ============================================
-        # 1. GET release notes from Jira
-        # ============================================
-        $notesUrl = "$jiraBase/rest/api/3/version/$versionId/notes?style=html"
-        Write-Host "Fetching release notes from $notesUrl"
-
-        $jiraTask = $jiraClient.GetAsync($notesUrl)
-        $jiraTask.Wait()
-        $jiraResponse = $jiraTask.Result
-
-        if (-not $jiraResponse.IsSuccessStatusCode) {
-            Write-Error "Jira API returned $($jiraResponse.StatusCode)"
-            exit 1
-        }
+      # ---------------------------
+      # Base64 encode credentials
+      # ---------------------------
+      JIRA_AUTH=$(echo -n "$JIRA_EMAIL:$JIRA_API_TOKEN" | base64)
+      CONF_AUTH=$(echo -n "$CONFLUENCE_EMAIL:$CONFLUENCE_API_TOKEN" | base64)
+      
+      # ---------------------------
+      # Get release notes from Jira
+      # ---------------------------
+      JIRA_URL="$JIRA_BASE_URL/rest/api/3/version/$JIRA_VERSION_ID/notes?style=html"
+      echo "Fetching Jira release notes for version $JIRA_VERSION_ID..."
