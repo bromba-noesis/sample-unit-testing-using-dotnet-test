@@ -40,5 +40,21 @@ steps:
         # ==================================================
         $jiraNotesUrl = "$jiraBase/rest/api/3/version/$versionId/notes?style=html"
 
-        Write-Host "Getting $versionId Release Notes from Jira at $jiraBase."
-        Write-Host "Storing Release Notes at $confBase."
+        Write-Host "Getting $versionId Release Notes from Jira at $jiraBase"
+        Write-Host "Storing Release Notes at $confBase"
+
+        try {
+            $jiraResponse = Invoke-RestMethod `
+              -Method GET `
+              -Uri $jiraNotesUrl `
+              -Headers @{ "Authorization" = "Basic $jiraAuth"; "Accept" = "application/json" }
+        }
+        catch {
+            Write-Error "Failed to get release notes from Jira."
+            throw
+        }
+
+        $releaseNotesHtml = $jiraResponse.notes
+
+        # Add a page heading
+        $fullHtml = "<h1>$pageTitle</h1>`n$releaseNotesHtml"
