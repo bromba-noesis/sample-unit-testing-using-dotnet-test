@@ -55,6 +55,3 @@ steps:
         }
 
         $releaseNotesHtml = $jiraResponse.notes
-
-        # Add a page heading
-        $fullHtml = "<h1>$pageTitle</h1>`n$releaseNotesHtml"
