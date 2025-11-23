@@ -13,22 +13,17 @@ steps:
       set -euo pipefail
 
       #hardcoded!
-      JIRA_VERSION_ID="1.2.1"
-      RELEASE_TITLE="Release Notes – Version 1.2.1" 
+      PROJECT_KEY: "BN"
+      FIX_VERSION: "1.2.1"
+      RELEASE_TITLE="Release Notes – Version 1.2.1"
 
-      echo "Generating and publishing release notes..."
+      echo "Generating release notes for Jira project $PROJECT_KEY, fixVersion $FIX_VERSION..."
 
       # ---------------------------
       # Base64 encode credentials
       # ---------------------------
       JIRA_AUTH=$(echo -n "$JIRA_EMAIL:$JIRA_API_TOKEN" | base64)
       CONF_AUTH=$(echo -n "$CONFLUENCE_EMAIL:$CONFLUENCE_API_TOKEN" | base64)
-      
-      # ---------------------------
-      # Get release notes from Jira
-      # ---------------------------
-      JIRA_URL="$JIRA_BASE_URL/rest/api/3/version/$JIRA_VERSION_ID/notes?style=html"
 
-      #curl -s -H "Authorization: Basic $JIRA_AUTH" -H "Accept: application/json" "$JIRA_URL"
-      curl -s -H "Accept: application/json" "$JIRA_URL"
-      
+      JQL="project=$PROJECT_KEY AND fixVersion=\"$FIX_VERSION\" ORDER BY issuetype, priority"
+      SEARCH_URL="$JIRA_BASE_URL/rest/api/3/search?jql=$(echo $JQL | jq -sRr @uri)&maxResults=1000&fields=key,summary,issuetype"
