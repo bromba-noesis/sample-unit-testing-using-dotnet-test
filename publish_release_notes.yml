@@ -38,20 +38,16 @@ steps:
         # ==================================================
         # 1. GET release notes from Jira
         # ==================================================
-        $jiraNotesUrl = "$jiraBase/rest/api/3/version/$versionId/notes?style=html"
+        $jiraUrl = "$jiraBase/rest/api/3/version/$versionId/notes?style=html"
 
         Write-Host "Getting $versionId Release Notes from Jira at $jiraBase"
         Write-Host "Storing Release Notes at $confBase"
 
-        try {
-            $jiraResponse = Invoke-RestMethod `
-              -Method GET `
-              -Uri $jiraNotesUrl `
-              -Headers @{ "Authorization" = "Basic $jiraAuth"; "Accept" = "application/json" }
-        }
-        catch {
-            Write-Error "Failed to get release notes from Jira."
-            throw
-        }
+        $notesJson = curl.exe -s -u "$jiraAuth" `
+          -H "Accept: application/json" `
+          "$jiraUrl"
 
-        $releaseNotesHtml = $jiraResponse.notes
+        if (!$notesJson) {
+            Write-Error "Failed to get Release Notes from Jira."
+            exit 1
+        }
