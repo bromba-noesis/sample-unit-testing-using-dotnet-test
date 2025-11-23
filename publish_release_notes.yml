@@ -43,11 +43,4 @@ steps:
         Write-Host "Getting $versionId Release Notes from Jira at $jiraBase"
         Write-Host "Storing Release Notes at $confBase"
 
-        $notesJson = curl.exe -s -u "$jiraAuth" `
-          -H "Accept: application/json" `
-          "$jiraUrl"
-
-        if (!$notesJson) {
-            Write-Error "Failed to get Release Notes from Jira."
-            exit 1
-        }
+        curl.exe -s -u "$jiraAuth" -H "Accept: application/json" "$jiraUrl"
