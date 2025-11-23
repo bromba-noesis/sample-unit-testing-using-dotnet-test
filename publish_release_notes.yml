@@ -60,12 +60,18 @@ steps:
           exit 1
         fi
 
+        echo aaa
+
         # Call Jira API
         RESP=$(curl -s \
           -H "Authorization: Basic $JIRA_AUTH" \
           -H "Content-Type: application/json" \
           -d "$PAYLOAD" \
           "$JIRA_BASE_URL/rest/api/3/search/jql")
+
+        echo $?
+        
+        echo bbb
 
         if [ -z "$RESP" ]; then
           echo "Error: empty response from Jira API"
